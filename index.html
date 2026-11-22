@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Erzeugt aus einem Bild oder einer Skizze eine gespiegelte Tiefenkarte bzw. STL-Datei für Springerle-Formen, mit drei wählbaren Rändern.">
+<title>Springerle-Formen-Generator</title>
+<style>
+:root{--bg:#faf6ef;--surface:#fff;--ink:#2b2118;--mute:#7a6a58;--line:#e3d8c6;--acc:#a4561b;--accink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1812;--surface:#2a231a;--ink:#f1e8da;--mute:#b3a48f;--line:#443a2c;--acc:#e08a4a;--accink:#1d1812}}
+:root[data-theme="dark"]{--bg:#1d1812;--surface:#2a231a;--ink:#f1e8da;--mute:#b3a48f;--line:#443a2c;--acc:#e08a4a;--accink:#1d1812}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:0 0 4px}
+h2{font-size:1.05rem;margin:0 0 10px}
+p.sub{margin:0 0 18px;color:var(--mute)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end}
+label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mute);gap:4px;min-width:130px;flex:1}
+label b{color:var(--ink);font-weight:600}
+input[type=number]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+input[type=range]{width:100%;accent-color:var(--acc)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:var(--accink);padding:8px 14px}
+button.ghost{background:transparent;color:var(--acc)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.borders{display:flex;gap:12px;flex-wrap:wrap}
+.bopt{flex:1;min-width:110px;max-width:200px;background:var(--bg);color:var(--ink);border:2px solid var(--line);padding:8px;text-align:center;border-radius:10px}
+.bopt.on{border-color:var(--acc)}
+.bopt canvas{width:100%;height:auto;display:block;border-radius:4px;margin-bottom:6px}
+.bopt small{display:block;color:var(--mute)}
+.prev{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.prev figure{margin:0;text-align:center}
+.prev canvas{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+figcaption{font-size:.85rem;color:var(--mute);margin-top:6px}
+.note{font-size:.85rem;color:var(--mute)}
+#fileBtn{position:relative;overflow:hidden}
+#fileBtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>Springerle-Formen-Generator</h1>
+<p class="sub">Bild oder Skizze hochladen, Rand wählen, gespiegelte Tiefenkarte mit feinen Linien (bis ca. 0,3 mm) für Schnitzvorlage, CNC oder 3D-Druck erhalten.</p>
+
+<section class="card">
+  <h2>1 · Motiv</h2>
+  <div class="row">
+    <button id="fileBtn" type="button">Eigenes Bild wählen<input id="file" type="file" accept="image/*"></button>
+    <button id="fox" type="button" class="ghost">Beispiel-Fuchs laden</button>
+  </div>
+  <p class="note" style="margin:10px 0 0">Am besten: Strichzeichnung mit dunklen Linien auf hellem Grund, hoch aufgelöst. Dünne Linien werden als flache, feine Rillen übernommen; Schwelle niedrig und Glättung klein halten, um Filigranes zu erhalten. Das Bild bleibt in deinem Browser und wird nicht hochgeladen.</p>
+</section>
+
+<section class="card">
+  <h2>2 · Einstellungen</h2>
+  <div class="row">
+    <label>Breite (mm)<input id="w" type="number" min="30" max="150" value="60"></label>
+    <label>Höhe (mm)<input id="h" type="number" min="30" max="150" value="80"></label>
+    <label><span>Max. Tiefe: <b id="depV">4,5</b> mm</span><input id="dep" type="range" min="2" max="8" step="0.5" value="4.5"></label>
+    <label><span>Schwelle: <b id="thrV">12</b> %</span><input id="thr" type="range" min="2" max="60" value="12"></label>
+    <label><span>Tiefenstufen: <b id="levV">16</b> (32 = stufenlos)</span><input id="lev" type="range" min="3" max="32" value="16"></label>
+    <label><span>Wandschräge: <b id="drV">12</b>° (0 = aus)</span><input id="dr" type="range" min="0" max="30" value="12"></label>
+    <label><span>Glättung: <b id="smV">0,15</b> mm</span><input id="sm" type="range" min="0" max="0.8" step="0.05" value="0.15"></label>
+    <label style="flex:0;min-width:140px;flex-direction:row;align-items:center;gap:8px"><input id="inv" type="checkbox"> Motiv hell/Grund dunkel</label>
+  </div>
+  <p class="note" style="margin:10px 0 0">Wandschräge: Alle Wände werden so geneigt, dass sich der Teig lösen lässt, es entstehen keine senkrechten Kanten oder Hinterschnitte. Dünne Linien werden dadurch V-förmig und flacher, breite Flächen behalten die volle Tiefe.</p>
+</section>
+
+<section class="card">
+  <h2>3 · Rand wählen</h2>
+  <div class="borders" id="borders"></div>
+</section>
+
+<section class="card">
+  <h2>4 · Ergebnis</h2>
+  <div class="prev">
+    <figure><canvas id="mold"></canvas><figcaption>Form (gespiegelt) · hell = flach, dunkel = tief</figcaption></figure>
+    <figure><canvas id="cookie"></canvas><figcaption>So sieht das Gebäck aus (Vorschau)</figcaption></figure>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button id="save" type="button">Tiefenkarte (PNG) speichern</button>
+    <button id="saveAll" type="button" class="ghost">Alle 6 Ränder speichern</button>
+  </div>
+  <h2 style="margin:20px 0 10px">5 · 3D-Druck (STL)</h2>
+  <div class="row">
+    <label>Mesh-Auflösung<select id="ms" style="font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"><option value="6">6 px/mm · klein (ca. 18 MB)</option><option value="8" selected>8 px/mm · fein (ca. 31 MB)</option><option value="10">10 px/mm · sehr fein (ca. 48 MB)</option></select></label>
+    <label><span>Sockel unter tiefster Stelle (mm) · Gesamtdicke: <b id="thick">5,7</b> mm</span><input id="base" type="number" min="0.6" max="10" step="0.2" value="1.2"></label>
+    <button id="stlN" type="button">STL Form (Negativ)</button>
+    <button id="stlP" type="button" class="ghost">STL Positiv (Gießvorlage)</button>
+  </div>
+  <p class="note" id="stlNote" style="margin:10px 0 0">Gedruckt wird flach, Relief nach oben. Es gilt der oben gewählte Rand und die Tiefe aus Schritt 2.</p>
+  <p class="note" id="dlNote" style="margin:10px 0 0">Export: 25 Pixel pro mm, Schwarz = tiefste Stelle. Als Heightmap in CNC- oder 3D-Software importieren.</p>
+</section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const NAMES = {A:["Doppellinie","klassisch"], B:["Perlrand","Punktkette"], C:["Zackenband","Kerbschnitt"], D:["Wellenband","Ranke"], E:["Rautenband","Rauten"], F:["Bogenfries","Girlande"]};
+const BORDERS = ["A","B","C","D","E","F"];
+let src = null, border = "A", timer = 0;
+
+function rr(x, c, y, w, h, r){
+  x.beginPath(); x.moveTo(c+r,y); x.lineTo(c+w-r,y); x.arcTo(c+w,y,c+w,y+r,r); x.lineTo(c+w,y+h-r);
+  x.arcTo(c+w,y+h,c+w-r,y+h,r); x.lineTo(c+r,y+h); x.arcTo(c,y+h,c,y+h-r,r); x.lineTo(c,y+r); x.arcTo(c,y,c+r,y,r); x.closePath();
+}
+
+function sampleFox(){
+  const c = document.createElement("canvas"); c.width = c.height = 800;
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,800,800); x.scale(2,2);
+  const tail = new Path2D("M265 330 C360 350 392 250 340 170 C330 230 300 260 250 270 Z");
+  const body = new Path2D("M140 150 C120 230 130 310 150 350 L270 350 C300 320 300 230 230 170 Z");
+  const head = new Path2D("M45 125 L105 70 L110 15 L140 60 L175 25 L185 85 C190 130 170 165 130 170 C95 170 60 150 45 125 Z");
+  x.lineCap = "round";
+  x.fillStyle = "#666"; x.fill(tail); x.fill(body);
+  x.fillStyle = "#c8c8c8"; x.beginPath(); x.ellipse(152,275,22,62,0.08,0,7); x.fill();
+  x.fillStyle = "#222"; x.fill(head);
+  // Schwanzspitze weiß
+  x.save(); x.clip(tail); x.fillStyle = "#fff"; x.beginPath(); x.ellipse(345,182,38,34,0,0,7); x.fill();
+  x.strokeStyle = "#000"; x.lineWidth = 1.4;
+  for (let i=0;i<11;i++){ x.beginPath(); x.moveTo(258+i*9,338-i*3); x.quadraticCurveTo(298+i*8,292-i*13,338+i*3,222-i*4); x.stroke(); }
+  x.restore();
+  // Fell am Körper
+  x.save(); x.clip(body); x.strokeStyle = "#000"; x.lineWidth = 1.2;
+  for (let i=0;i<9;i++){ x.beginPath(); x.moveTo(205+i*10,190+i*9); x.quadraticCurveTo(222+i*10,228+i*9,212+i*10,264+i*9); x.stroke(); }
+  for (let i=0;i<8;i++){ x.beginPath(); x.moveTo(134,215+i*14); x.quadraticCurveTo(148,224+i*14,166,238+i*14); x.stroke(); }
+  x.restore();
+  // Kopf: helle Linien
+  x.strokeStyle = "#fff"; x.lineWidth = 1.5;
+  [[112,30,121,64],[171,40,168,72],[138,152,172,160],[128,160,160,173],[112,164,142,177],[70,118,92,112]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
+  x.fillStyle = "#fff"; x.beginPath(); x.ellipse(98,105,9,3.5,-0.4,0,7); x.fill();
+  x.fillStyle = "#000"; x.beginPath(); x.arc(49,125,6,0,7); x.fill();
+  // Schnurrhaare
+  x.strokeStyle = "#000"; x.lineWidth = 1.3;
+  [[40,122,8,112],[40,128,6,129],[42,134,10,146]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
+  return c;
+}
+
+function drawBorder(x, bd, W, H, S){
+  x.fillStyle = x.strokeStyle = "#000";
+  if (bd === "A"){
+    x.lineWidth = 0.6*S; rr(x, 3.2*S, 3.2*S, W-6.4*S, H-6.4*S, 1.5*S); x.stroke();
+    x.lineWidth = 0.35*S; rr(x, 4.6*S, 4.6*S, W-9.2*S, H-9.2*S, 0.9*S); x.stroke();
+  } else if (bd === "B"){
+    const m = 3.5*S, n1 = Math.round((W-2*m)/(2*S)), n2 = Math.round((H-2*m)/(2*S));
+    const dot = (px,py,r) => { x.beginPath(); x.arc(px,py,r,0,7); x.fill(); };
+    for (let i=0;i<=n1;i++){ const px = m+i*(W-2*m)/n1; dot(px,m,0.6*S); dot(px,H-m,0.6*S); }
+    for (let i=0;i<=n2;i++){ const py = m+i*(H-2*m)/n2; dot(m,py,0.6*S); dot(W-m,py,0.6*S); }
+    [[m,m],[W-m,m],[m,H-m],[W-m,H-m]].forEach(p => dot(p[0],p[1],1.0*S));
+  } else {
+    // C, D, E, F: zwei feine Rahmenlinien mit Ornamentband dazwischen
+    x.lineWidth = 0.4*S;
+    rr(x, 3*S, 3*S, W-6*S, H-6*S, 1.2*S); x.stroke();
+    rr(x, 5.4*S, 5.4*S, W-10.8*S, H-10.8*S, 0.7*S); x.stroke();
+    const side = len => {
+      const n = Math.max(2, Math.round((len-6*S)/(2*S))), tw = (len-6*S)/n;
+      if (bd === "C"){
+        for (let i=0;i<n;i++){
+          const x0 = 3*S+i*tw; x.beginPath();
+          if (i%2===0){ x.moveTo(x0,3.3*S); x.lineTo(x0+tw,3.3*S); x.lineTo(x0+tw/2,5.1*S); }
+          else { x.moveTo(x0,5.1*S); x.lineTo(x0+tw,5.1*S); x.lineTo(x0+tw/2,3.3*S); }
+          x.closePath(); x.fill();
+        }
+      } else if (bd === "D"){
+        x.lineWidth = 0.35*S; x.beginPath();
+        for (let px=3*S; px<=len-3*S; px+=S/4){
+          const py = 4.2*S + 0.7*S*Math.sin((px-3*S)/(len-6*S)*n*Math.PI);
+          if (px===3*S) x.moveTo(px,py); else x.lineTo(px,py);
+        }
+        x.stroke();
+      } else if (bd === "E"){
+        x.lineWidth = 0.3*S; x.beginPath();
+        for (let i=0;i<n;i++){
+          const x0 = 3*S+i*tw;
+          x.moveTo(x0,3.5*S); x.lineTo(x0+tw/2,4.9*S); x.lineTo(x0+tw,3.5*S);
+          x.moveTo(x0,4.9*S); x.lineTo(x0+tw/2,3.5*S); x.lineTo(x0+tw,4.9*S);
+        }
+        x.stroke();
+      } else {
+        x.lineWidth = 0.35*S;
+        for (let i=0;i<n;i++){
+          const cx = 3*S+(i+0.5)*tw;
+          x.beginPath(); x.arc(cx,3.3*S,tw/2-0.15*S,0,Math.PI); x.stroke();
+          x.beginPath(); x.arc(cx,3.6*S,0.22*S,0,7); x.fill();
+        }
+      }
+    };
+    [[0,0,0,W],[W,0,90,H],[W,H,180,W],[0,H,270,H]].forEach(q => {
+      x.save(); x.translate(q[0],q[1]); x.rotate(q[2]*Math.PI/180); side(q[3]); x.restore();
+    });
+  }
+}
+
+function bH(s,d,W,H,r){for(let y=0;y<H;y++){const o=y*W;let sum=0;for(let i=-r;i<=r;i++)sum+=s[o+Math.min(W-1,Math.max(0,i))];for(let x=0;x<W;x++){d[o+x]=sum/(2*r+1);sum+=s[o+Math.min(W-1,x+r+1)]-s[o+Math.max(0,x-r)];}}}
+function bV(s,d,W,H,r){for(let x=0;x<W;x++){let sum=0;for(let i=-r;i<=r;i++)sum+=s[Math.min(H-1,Math.max(0,i))*W+x];for(let y=0;y<H;y++){d[y*W+x]=sum/(2*r+1);sum+=s[Math.min(H-1,y+r+1)*W+x]-s[Math.max(0,y-r)*W+x];}}}
+function draft(h,W,H,c){
+  const d = c*1.4142;
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){
+    const i = y*W+x; let v = h[i];
+    if (x>0) v = Math.min(v,h[i-1]+c);
+    if (y>0){ v = Math.min(v,h[i-W]+c); if (x>0) v = Math.min(v,h[i-W-1]+d); if (x<W-1) v = Math.min(v,h[i-W+1]+d); }
+    h[i] = v;
+  }
+  for (let y=H-1;y>=0;y--) for (let x=W-1;x>=0;x--){
+    const i = y*W+x; let v = h[i];
+    if (x<W-1) v = Math.min(v,h[i+1]+c);
+    if (y<H-1){ v = Math.min(v,h[i+W]+c); if (x<W-1) v = Math.min(v,h[i+W+1]+d); if (x>0) v = Math.min(v,h[i+W-1]+d); }
+    h[i] = v;
+  }
+}
+function blur(a,W,H,r){
+  r = Math.round(r); if (r<1) return a;
+  let t = new Float32Array(a.length), b = new Float32Array(a.length);
+  bH(a,t,W,H,r); bV(t,b,W,H,r); bH(b,t,W,H,r); bV(t,b,W,H,r); return b;
+}
+
+function compute(bd, S){
+  const Wm = +$("w").value, Hm = +$("h").value;
+  const W = Math.round(Wm*S), H = Math.round(Hm*S), inset = 7*S;
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d", {willReadFrequently:true});
+  x.fillStyle = "#fff"; x.fillRect(0,0,W,H);
+  let rx0=0, rx1=0, ry0=0, ry1=0;
+  if (src){
+    const aw = W-2*inset, ah = H-2*inset, r = Math.min(aw/src.width, ah/src.height);
+    const dw = src.width*r, dh = src.height*r;
+    rx0 = (W-dw)/2; ry0 = (H-dh)/2; rx1 = rx0+dw; ry1 = ry0+dh;
+    x.imageSmoothingQuality = "high"; x.drawImage(src, rx0, ry0, dw, dh);
+  }
+  const d = x.getImageData(0,0,W,H).data, h = new Float32Array(W*H);
+  const thr = +$("thr").value/100, inv = $("inv").checked;
+  const N = +$("lev").value;
+  for (let py=0;py<H;py++) for (let px=0;px<W;px++){
+    const i = py*W+px, p = i*4;
+    let dk = 1-(0.299*d[p]+0.587*d[p+1]+0.114*d[p+2])/255;
+    if (inv && px>=rx0 && px<rx1 && py>=ry0 && py<ry1) dk = 1-dk;
+    const v = Math.max(0, Math.min(1, (dk-thr)/(1-thr))); h[i] = N>=32 ? v : Math.round(v*(N-1))/(N-1);
+  }
+  // Rand
+  const bc = document.createElement("canvas"); bc.width = W; bc.height = H;
+  const bx = bc.getContext("2d", {willReadFrequently:true});
+  bx.fillStyle = "#fff"; bx.fillRect(0,0,W,H); drawBorder(bx, bd, W, H, S);
+  const bd2 = bx.getImageData(0,0,W,H).data;
+  for (let i=0;i<W*H;i++) h[i] = Math.max(h[i], 0.7*(1-bd2[i*4]/255));
+  const dg = +$("dr").value, dpt = +$("dep").value;
+  if (dg > 0) draft(h, W, H, (1/Math.tan(dg*Math.PI/180))/(S*dpt));
+  return {h: blur(h, W, H, +$("sm").value*S), W, H};
+}
+
+function drawMold(cv, res){
+  const {h,W,H} = res; cv.width = W; cv.height = H;
+  const x = cv.getContext("2d"), im = x.createImageData(W,H), o = im.data;
+  for (let py=0;py<H;py++) for (let px=0;px<W;px++){
+    const v = 255*(1-h[py*W+(W-1-px)]), p = (py*W+px)*4;
+    o[p]=o[p+1]=o[p+2]=v; o[p+3]=255;
+  }
+  x.putImageData(im,0,0);
+}
+
+function drawCookie(cv, res, S){
+  const {h,W,H} = res; cv.width = W; cv.height = H;
+  const x = cv.getContext("2d"), im = x.createImageData(W,H), o = im.data, k = +$("dep").value*S/2;
+  for (let py=0;py<H;py++) for (let px=0;px<W;px++){
+    const i = py*W+px;
+    const gx = (h[py*W+Math.min(W-1,px+1)]-h[py*W+Math.max(0,px-1)])*k;
+    const gy = (h[Math.min(H-1,py+1)*W+px]-h[Math.max(0,py-1)*W+px])*k;
+    let s = (0.5*gx+0.5*gy+0.7)/(0.995*Math.sqrt(1+gx*gx+gy*gy))/0.7;
+    s = Math.max(0.45,Math.min(1.3,s))*(1-0.05*h[i]);
+    const p = i*4;
+    o[p]=Math.min(255,236*s); o[p+1]=Math.min(255,205*s); o[p+2]=Math.min(255,160*s); o[p+3]=255;
+  }
+  x.putImageData(im,0,0);
+}
+
+function render(){
+  const S = 14, res = compute(border, S);
+  drawMold($("mold"), res); drawCookie($("cookie"), res, S);
+  BORDERS.forEach(b => drawMold($("t"+b), compute(b, 4)));
+}
+function schedule(){ clearTimeout(timer); timer = setTimeout(render, 80); }
+
+function saveFile(name, blob){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  return new Promise(r => setTimeout(r, 400));
+}
+function blobOf(cv){ return new Promise(r => cv.toBlob(r, "image/png")); }
+async function exportBorder(b){
+  const res = compute(b, 25), cv = document.createElement("canvas"); drawMold(cv, res);
+  const blob = await blobOf(cv);
+  await saveFile(`springerle_form_${b}_${$("w").value}x${$("h").value}mm_${$("dep").value}mm.png`, blob);
+}
+
+function buildSTL(res, mode, base, depth, S){
+  const {h,W,H} = res, z = new Float32Array(W*H);
+  for (let j=0;j<H;j++) for (let i=0;i<W;i++)
+    z[j*W+i] = mode==="neg" ? base+depth*(1-h[j*W+(W-1-i)]) : base+depth*h[j*W+i];
+  const nT = 2*(W-1)*(H-1)+4*(W-1)+4*(H-1)+2*(W+H)-4;
+  const dv = new DataView(new ArrayBuffer(84+50*nT)); dv.setUint32(80,nT,true);
+  let o = 84;
+  const tri = (a,b,c,d,e,f,g,k,l) => {
+    const ux=d-a,uy=e-b,uz=f-c,vx=g-a,vy=k-b,vz=l-c;
+    const nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx, n=Math.hypot(nx,ny,nz)||1;
+    dv.setFloat32(o,nx/n,true); dv.setFloat32(o+4,ny/n,true); dv.setFloat32(o+8,nz/n,true);
+    dv.setFloat32(o+12,a,true); dv.setFloat32(o+16,b,true); dv.setFloat32(o+20,c,true);
+    dv.setFloat32(o+24,d,true); dv.setFloat32(o+28,e,true); dv.setFloat32(o+32,f,true);
+    dv.setFloat32(o+36,g,true); dv.setFloat32(o+40,k,true); dv.setFloat32(o+44,l,true);
+    o += 50;
+  };
+  const X = i => i/S, Y = j => (H-1-j)/S, Z = (i,j) => z[j*W+i];
+  for (let j=0;j<H-1;j++) for (let i=0;i<W-1;i++){
+    const x0=X(i),x1=X(i+1),y0=Y(j),y1=Y(j+1),a=Z(i,j),b=Z(i+1,j),c=Z(i,j+1),d=Z(i+1,j+1);
+    tri(x0,y0,a, x0,y1,c, x1,y1,d); tri(x0,y0,a, x1,y1,d, x1,y0,b);
+  }
+  for (let i=0;i<W-1;i++){
+    let y = Y(H-1);
+    tri(X(i),y,0, X(i+1),y,0, X(i+1),y,Z(i+1,H-1)); tri(X(i),y,0, X(i+1),y,Z(i+1,H-1), X(i),y,Z(i,H-1));
+    y = Y(0);
+    tri(X(i+1),y,0, X(i),y,0, X(i),y,Z(i,0)); tri(X(i+1),y,0, X(i),y,Z(i,0), X(i+1),y,Z(i+1,0));
+  }
+  for (let j=0;j<H-1;j++){
+    let x = 0;
+    tri(x,Y(j),0, x,Y(j+1),0, x,Y(j+1),Z(0,j+1)); tri(x,Y(j),0, x,Y(j+1),Z(0,j+1), x,Y(j),Z(0,j));
+    x = X(W-1);
+    tri(x,Y(j+1),0, x,Y(j),0, x,Y(j),Z(W-1,j)); tri(x,Y(j+1),0, x,Y(j),Z(W-1,j), x,Y(j+1),Z(W-1,j+1));
+  }
+  const per = [];
+  for (let i=0;i<W;i++) per.push([i,H-1]);
+  for (let j=H-2;j>=0;j--) per.push([W-1,j]);
+  for (let i=W-2;i>=0;i--) per.push([i,0]);
+  for (let j=1;j<=H-2;j++) per.push([0,j]);
+  const cx = (W-1)/(2*S), cy = (H-1)/(2*S);
+  for (let k=0;k<per.length;k++){
+    const p = per[k], q = per[(k+1)%per.length];
+    tri(cx,cy,0, X(q[0]),Y(q[1]),0, X(p[0]),Y(p[1]),0);
+  }
+  return {buf: dv.buffer, tris: nT};
+}
+async function exportSTL(mode){
+  const note = $("stlNote"), old = note.textContent;
+  try {
+    note.textContent = "Berechne Mesh …"; await new Promise(r => setTimeout(r,40));
+    const S = +$("ms").value, res = compute(border, S), st = buildSTL(res, mode, +$("base").value, +$("dep").value, S);
+    const nm = `springerle_${mode==="neg"?"form":"positiv"}_${border}_${$("w").value}x${$("h").value}mm`;
+    const blob = new Blob([st.buf], {type:"model/stl"});
+    note.textContent = `${st.tris.toLocaleString("de-DE")} Dreiecke, ${(blob.size/1048576).toFixed(0)} MB.`;
+    await saveFile(nm+".stl", blob);
+    note.textContent = "Fertig. Die STL-Datei im Slicer öffnen.";
+  } catch(e){ note.textContent = "Fehler: " + ((e && e.message) || "unbekannt"); }
+}
+// Aufbau
+const bw = $("borders");
+BORDERS.forEach(b => {
+  const btn = document.createElement("button");
+  btn.type = "button"; btn.className = "bopt" + (b===border?" on":""); btn.dataset.b = b;
+  btn.innerHTML = `<canvas id="t${b}"></canvas><b>${b} · ${NAMES[b][0]}</b><small>${NAMES[b][1]}</small>`;
+  btn.onclick = () => { border = b; bw.querySelectorAll(".bopt").forEach(e => e.classList.toggle("on", e.dataset.b===b)); render(); };
+  bw.appendChild(btn);
+});
+const fmt = v => String(v).replace(".", ",");
+[["dep","depV"],["thr","thrV"],["lev","levV"],["sm","smV"],["dr","drV"]].forEach(([i,o]) => $(i).addEventListener("input", () => { $(o).textContent = fmt($(i).value); schedule(); }));
+["w","h","inv"].forEach(i => $(i).addEventListener("input", schedule));
+$("fox").onclick = () => { src = sampleFox(); render(); };
+$("file").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => { const im = new Image(); im.onload = () => { src = im; render(); }; im.src = fr.result; };
+  fr.readAsDataURL(f);
+};
+$("save").onclick = async () => { try { await exportBorder(border); } catch(e){} };
+$("saveAll").onclick = async () => { try { for (const b of BORDERS) await exportBorder(b); } catch(e){} };
+$("stlN").onclick = () => exportSTL("neg"); $("stlP").onclick = () => exportSTL("pos");
+
+const updThick = () => { $("thick").textContent = fmt(((+$("base").value)+(+$("dep").value)).toFixed(1)); };
+["base","dep"].forEach(i => $(i).addEventListener("input", updThick)); updThick();
+src = sampleFox(); render();
+</script>
+</body>
+</html>
