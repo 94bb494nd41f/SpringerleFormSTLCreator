@@ -1,87 +1,90 @@
-# Springerle-Formen-Generator
+# Springerle Mold Generator
 
-Ein kleines Browser-Tool, das aus einem Bild oder einer Skizze eine **Springerle-Backform** entwirft. Das Ergebnis ist eine gespiegelte Tiefenkarte (PNG) oder eine druckfertige **STL-Datei** für den 3D-Druck, wahlweise mit einem von **sechs Rändern**.
+A small browser tool that designs a **Springerle baking mold** from an image or sketch. The result is a mirrored depth map (PNG) or a print-ready **STL file** for 3D printing, with a choice of **six borders**.
 
-Das Tool besteht aus einer einzigen Datei (`index.html`) und läuft komplett lokal im Browser. Es braucht keine Installation, keinen Server und keine Internetverbindung. Dein Bild wird nirgendwohin hochgeladen.
+The tool is a single file (`index.html`) and runs entirely in your browser. No installation, no server, no internet connection needed. Your image is never uploaded.
 
-## Verwendung
+It is tuned for printers with a **0.2 mm nozzle**: borders and the minimum feature width are around 0.5 mm.
 
-1. `index.html` im Browser öffnen (Doppelklick genügt).
-   Alternativ per **GitHub Pages** veröffentlichen: *Settings → Pages → Branch `main` → `/ (root)`*.
-2. Ein eigenes Bild wählen oder den **Beispiel-Fuchs** laden.
-3. Format, Tiefe, Schwelle, Tiefenstufen und Glättung einstellen.
-4. Einen der drei Ränder wählen.
-5. Ergebnis prüfen: links die **gespiegelte Form** (dunkel = tief), rechts eine **Vorschau des Gebäcks**.
-6. Exportieren:
-   - **Tiefenkarte (PNG)**, 25 Pixel pro mm, für CNC-Fräsen, Schnitzvorlagen oder Heightmap-Import
-   - **STL Form (Negativ)** zum direkten Drucken
-   - **STL Positiv (Gießvorlage)** zum Abformen in Silikon
+## Usage
 
-## Die sechs Ränder
+1. Open `index.html` in a browser (a double-click is enough).
+   Alternatively publish it with **GitHub Pages**: *Settings → Pages → Branch `main` → `/ (root)`*.
+2. Choose your own image or load the **example fox**.
+3. Adjust size, depth, threshold, depth levels, minimum feature width, draft angle and smoothing.
+4. Pick one of the six borders.
+5. Check the result: the **mirrored mold** on the left (dark = deep) and a **preview of the baked cookie** on the right.
+6. Export:
+   - **Depth map (PNG)**, 25 pixels per mm, for CNC milling, carving templates or heightmap import
+   - **STL mold (negative)** to print directly
+   - **STL positive (casting master)** to cast a silicone mold from
 
-| Rand | Beschreibung |
+## The six borders
+
+| Border | Description |
 |---|---|
-| **A · Doppellinie** | zwei feine, umlaufende Linien (0,6 und 0,35 mm), angelehnt an historische Model |
-| **B · Perlrand** | Kette runder Mulden (Ø 1,2 mm, Abstand 2 mm) mit größeren Eckperlen |
-| **C · Zackenband** | Kerbschnitt-Band aus kleinen Dreiecken zwischen zwei feinen Linien |
-| **D · Wellenband** | fließende Wellenlinie (Ranke) zwischen zwei feinen Rahmenlinien |
-| **E · Rautenband** | Kette kleiner Rauten aus sich kreuzenden Zickzacklinien |
-| **F · Bogenfries** | Reihe kleiner Bögen mit Punkt (Girlande) unter der äußeren Linie |
+| **A · Double line** | two continuous lines (0.8 and 0.5 mm), inspired by historical molds |
+| **B · Pearl border** | chain of round dimples (Ø 1.6 mm, 3.2 mm pitch) with larger corner pearls |
+| **C · Zigzag band** | notched band of triangles between two frame lines |
+| **D · Wave band** | flowing wave line (vine) between two frame lines |
+| **E · Diamond band** | chain of small diamonds made of crossing zigzag lines |
+| **F · Arch frieze** | row of small arches with a dot (garland) below the outer line |
 
-Der äußere Rand dient beim Backen zugleich als Orientierung für die Schnittlinie.
+The outer border also serves as a guide for cutting the cookie out.
 
-## Einstellungen
+## Settings
 
-| Regler | Wirkung |
+| Control | Effect |
 |---|---|
-| Breite / Höhe | Größe der Form in mm |
-| Max. Tiefe | Tiefe der tiefsten Stelle (2–8 mm), nach Quellen sind ca. 4–5 mm üblich |
-| Schwelle | ab welcher Dunkelheit eine Linie oder Fläche in die Tiefe geht |
-| Tiefenstufen | 3 bis 32 (32 = stufenlos) |
-| Wandschräge | neigt alle Wände (Winkel zur Senkrechten, Standard 12°), damit sich der Teig löst. Dünne Linien werden dadurch V-förmig und flacher, breite Flächen behalten die volle Tiefe. 0 = aus |
-| Glättung | rundet Kanten, damit sich der Teig löst. Klein halten für filigrane Motive |
-| Motiv hell / Grund dunkel | kehrt die Helligkeit des Bildes um |
-| Mesh-Auflösung | Feinheit der STL (6, 8 oder 10 px/mm) |
-| Sockel | Restdicke unter der tiefsten Stelle (STL), Standard 1,2 mm. Gesamtdicke = Sockel + Tiefe. Dünner spart Druckmaterial |
+| Width / Height | mold size in mm |
+| Max. depth | depth of the deepest point (2–8 mm); about 4–5 mm is common |
+| Threshold | darkness at which a line or area goes into depth |
+| Depth levels | 3 to 32 (32 = continuous) |
+| Min. feature width | thinner lines are thickened to this width (default 0.5 mm, suited to a 0.2 mm nozzle). 0 = off |
+| Draft angle | tilts all walls (angle from vertical, default 12°) so the dough releases. Thin lines become V-shaped and shallower, wide areas keep full depth. 0 = off |
+| Smoothing | rounds edges; keep it small for detailed motifs |
+| Light motif on dark background | inverts the image brightness |
+| Mesh resolution | STL detail (6, 8 or 10 px/mm) |
+| Base | thickness under the deepest point (STL), default 1.2 mm. Total thickness = base + depth. Thinner saves filament |
 
-## Was eine gute Springerle-Form ausmacht
+## What makes a good Springerle mold
 
-Die Voreinstellungen des Tools beruhen auf diesen Kriterien:
+The defaults of the tool follow these criteria:
 
-- **Negativform, spiegelverkehrt:** Was im Holz vertieft ist, wird auf dem Gebäck erhaben. Schrift und Motiv müssen gespiegelt sein.
-- **Tiefer als bei flachen Gebäckformen:** Das Relief muss deutlich ausgeprägt sein. Die tiefste Stelle liegt dort, wo das Motiv am vollsten ist.
-- **Keine Hinterschnitte, glatte und runde Mulden:** Sonst bleibt der Teig hängen. Das Tool neigt deshalb alle Wände um einen einstellbaren Winkel.
-- **Klare Silhouette und feine Details:** Historische Model sind filigran. Die Linien dürfen sehr fein sein (ab ca. 0,3 mm in diesem Tool).
-- **Rand oder Rahmen:** Doppellinien und Ornamentbänder geben dem Motiv Halt.
-- **Holz mit kurzen Fasern**, etwa Birnbaum, wenn die Form geschnitzt wird.
-- **Typische Größe:** ca. 4–10 cm Kantenlänge.
+- **Negative mold, mirrored:** whatever is recessed in the mold becomes raised on the cookie. Text and motif must be mirrored.
+- **Deeper than molds for flat cookies:** the relief must be clearly pronounced. The deepest spot is where the motif is fullest.
+- **No undercuts, smooth and rounded hollows:** otherwise the dough sticks. The tool tilts all walls by an adjustable angle.
+- **Clear silhouette:** historical molds are delicate, but thin lines are not reliably printable. With a 0.2 mm nozzle, keep features at about 0.5 mm or more.
+- **Border or frame:** double lines and ornament bands give the motif a frame.
+- **Wood with short fibers**, such as pear wood, if the mold is carved.
+- **Typical size:** roughly 4–10 cm edge length.
 
-## 3D-Druck
+## 3D printing
 
-- STL **flach drucken, Relief nach oben**.
-- **Material sparen:** Sockel dünn halten (Standard 1,2 mm), wenig Füllung (ca. 10–15 %) und 2–3 Wände genügen.
-- Für sehr feine Linien ist ein **Harzdrucker** oder eine **0,2-mm-Düse** besser geeignet als eine 0,4-mm-Düse. Schichthöhe etwa 0,1–0,15 mm.
-- **Lebensmittelsicherheit:** 3D-gedruckte Oberflächen sind porös, in feinen Details können sich Reste festsetzen. Harz ist meist nicht lebensmittelgeeignet.
-  Sicherere Variante: das **Positiv** drucken, davon eine Form aus **lebensmittelechtem Silikon** gießen und diese verwenden.
-- Form vor jedem Gebrauch mit Mehl oder Stärke bestäuben, von Hand lauwarm abwaschen, nicht in die Spülmaschine.
-- Vor dem Backen einen **Probeabdruck in Knetmasse** machen.
+- Print the STL **flat, relief facing up**.
+- **Save material:** keep the base thin (default 1.2 mm); 10–15 % infill and 2–3 walls are enough.
+- For fine detail, a **resin printer** or a **0.2 mm nozzle** works better than a 0.4 mm nozzle. Layer height about 0.1–0.15 mm.
+- **Food safety:** 3D-printed surfaces are porous and residue can collect in fine details. Resin is usually not food safe.
+  A safer route: print the **positive**, cast a mold from **food-grade silicone**, and use that.
+- Dust the mold with flour or starch before each use, hand-wash lukewarm, and do not put it in the dishwasher.
+- Make a **test impression in modeling clay** before baking.
 
-## Grenzen
+## Limitations
 
-- Das Tool rechnet Helligkeit in Tiefe um. Es erkennt keine Motive und ergänzt keine Details. Strichzeichnungen mit dunklen Linien auf hellem Grund funktionieren am besten, Fotos nur eingeschränkt.
-- Die Maße der Ränder und die Tiefenwerte sind Richtwerte und sollten mit einem Testabdruck überprüft werden.
-- Der Beispiel-Fuchs ist eine einfache, selbst gezeichnete Grafik und dient nur als Demo.
+- The tool converts brightness into depth. It does not recognize subjects or add details. Line drawings with dark lines on a light background work best; photos only to a limited extent.
+- Border dimensions and depth values are guidelines; verify them with a test impression.
+- The example fox is a simple, hand-drawn graphic and is only a demo.
 
-## Technik
+## Technical notes
 
-Reines HTML, CSS und JavaScript ohne Abhängigkeiten. Die Tiefenkarte entsteht mit der Canvas-API. Die STL wird als Binär-STL direkt im Browser erzeugt (geschlossenes Mesh mit Sockel). Läuft in aktuellen Versionen von Chrome, Firefox, Edge und Safari. Für große STL-Dateien (Mesh-Auflösung 10 px/mm) wird etwas Arbeitsspeicher benötigt.
+Plain HTML, CSS and JavaScript with no dependencies. The depth map is built with the Canvas API. The STL is generated in the browser as a binary STL (closed mesh with a base). Runs in current versions of Chrome, Firefox, Edge and Safari. Large STL files (mesh resolution 10 px/mm) need some memory.
 
-## Lizenz
+## License
 
-MIT, siehe [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
 
 ---
 
-## Hinweis zu Claude
+## Note on Claude
 
-Dieses Projekt, einschließlich des Codes und dieser README, wurde mit Unterstützung von **Claude** (KI-Assistent von Anthropic) erstellt. Der Inhalt ist KI-generiert und wurde nicht umfassend geprüft. Bitte prüfe Ergebnisse, insbesondere Maße, Tiefen und exportierte STL-Dateien, vor der Verwendung selbst. Für Lebensmittelsicherheit, Materialwahl und Druckergebnisse übernimmt das Projekt keine Gewähr, die Verantwortung liegt bei den Nutzern.
+This project, including the code and this README, was created with the assistance of **Claude** (an AI assistant by Anthropic). The content is AI-generated and has not been thoroughly reviewed. Please check results yourself before use, especially dimensions, depths and exported STL files. The project gives no warranty for food safety, material choice or print results; responsibility lies with the users.

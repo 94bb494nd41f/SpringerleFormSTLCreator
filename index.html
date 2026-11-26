@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Erzeugt aus einem Bild oder einer Skizze eine gespiegelte Tiefenkarte bzw. STL-Datei für Springerle-Formen, mit drei wählbaren Rändern.">
-<title>Springerle-Formen-Generator</title>
+<meta name="description" content="Turns an image or sketch into a mirrored depth map or STL file for Springerle molds, with six selectable borders.">
+<title>Springerle Mold Generator</title>
 <style>
 :root{--bg:#faf6ef;--surface:#fff;--ink:#2b2118;--mute:#7a6a58;--line:#e3d8c6;--acc:#a4561b;--accink:#fff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -42,63 +42,64 @@ figcaption{font-size:.85rem;color:var(--mute);margin-top:6px}
 </head>
 <body>
 <main>
-<h1>Springerle-Formen-Generator</h1>
-<p class="sub">Bild oder Skizze hochladen, Rand wählen, gespiegelte Tiefenkarte mit feinen Linien (bis ca. 0,3 mm) für Schnitzvorlage, CNC oder 3D-Druck erhalten.</p>
+<h1>Springerle Mold Generator</h1>
+<p class="sub">Upload an image or sketch, pick a border, and get a mirrored depth map or STL for carving, CNC or 3D printing. Designed for a 0.2 mm nozzle: the smallest features are about 0.5 mm.</p>
 
 <section class="card">
-  <h2>1 · Motiv</h2>
+  <h2>1 · Motif</h2>
   <div class="row">
-    <button id="fileBtn" type="button">Eigenes Bild wählen<input id="file" type="file" accept="image/*"></button>
-    <button id="fox" type="button" class="ghost">Beispiel-Fuchs laden</button>
+    <button id="fileBtn" type="button">Choose your own image<input id="file" type="file" accept="image/*"></button>
+    <button id="fox" type="button" class="ghost">Load example fox</button>
   </div>
-  <p class="note" style="margin:10px 0 0">Am besten: Strichzeichnung mit dunklen Linien auf hellem Grund, hoch aufgelöst. Dünne Linien werden als flache, feine Rillen übernommen; Schwelle niedrig und Glättung klein halten, um Filigranes zu erhalten. Das Bild bleibt in deinem Browser und wird nicht hochgeladen.</p>
+  <p class="note" style="margin:10px 0 0">Best results: line drawings with dark lines on a light background, high resolution. Lines thinner than the minimum feature width are thickened so they stay printable. Your image stays in your browser and is not uploaded.</p>
 </section>
 
 <section class="card">
-  <h2>2 · Einstellungen</h2>
+  <h2>2 · Settings</h2>
   <div class="row">
-    <label>Breite (mm)<input id="w" type="number" min="30" max="150" value="60"></label>
-    <label>Höhe (mm)<input id="h" type="number" min="30" max="150" value="80"></label>
-    <label><span>Max. Tiefe: <b id="depV">4,5</b> mm</span><input id="dep" type="range" min="2" max="8" step="0.5" value="4.5"></label>
-    <label><span>Schwelle: <b id="thrV">12</b> %</span><input id="thr" type="range" min="2" max="60" value="12"></label>
-    <label><span>Tiefenstufen: <b id="levV">16</b> (32 = stufenlos)</span><input id="lev" type="range" min="3" max="32" value="16"></label>
-    <label><span>Wandschräge: <b id="drV">12</b>° (0 = aus)</span><input id="dr" type="range" min="0" max="30" value="12"></label>
-    <label><span>Glättung: <b id="smV">0,15</b> mm</span><input id="sm" type="range" min="0" max="0.8" step="0.05" value="0.15"></label>
-    <label style="flex:0;min-width:140px;flex-direction:row;align-items:center;gap:8px"><input id="inv" type="checkbox"> Motiv hell/Grund dunkel</label>
+    <label>Width (mm)<input id="w" type="number" min="30" max="150" value="60"></label>
+    <label>Height (mm)<input id="h" type="number" min="30" max="150" value="80"></label>
+    <label><span>Max. depth: <b id="depV">4.5</b> mm</span><input id="dep" type="range" min="2" max="8" step="0.5" value="4.5"></label>
+    <label><span>Threshold: <b id="thrV">12</b> %</span><input id="thr" type="range" min="2" max="60" value="12"></label>
+    <label><span>Depth levels: <b id="levV">16</b> (32 = continuous)</span><input id="lev" type="range" min="3" max="32" value="16"></label>
+    <label><span>Min. feature width: <b id="mwV">0.5</b> mm (0 = off)</span><input id="mw" type="range" min="0" max="1.5" step="0.1" value="0.5"></label>
+    <label><span>Draft angle: <b id="drV">12</b>° (0 = off)</span><input id="dr" type="range" min="0" max="30" value="12"></label>
+    <label><span>Smoothing: <b id="smV">0.15</b> mm</span><input id="sm" type="range" min="0" max="0.8" step="0.05" value="0.15"></label>
+    <label style="flex:0;min-width:140px;flex-direction:row;align-items:center;gap:8px"><input id="inv" type="checkbox"> Light motif on dark background</label>
   </div>
-  <p class="note" style="margin:10px 0 0">Wandschräge: Alle Wände werden so geneigt, dass sich der Teig lösen lässt, es entstehen keine senkrechten Kanten oder Hinterschnitte. Dünne Linien werden dadurch V-förmig und flacher, breite Flächen behalten die volle Tiefe.</p>
+  <p class="note" style="margin:10px 0 0">Draft angle: all walls are tilted so the dough releases cleanly, with no vertical edges or undercuts. Thin lines become V-shaped and shallower; wide areas keep the full depth. Min. feature width: thinner lines are thickened to this width (0.5 mm suits a 0.2 mm nozzle).</p>
 </section>
 
 <section class="card">
-  <h2>3 · Rand wählen</h2>
+  <h2>3 · Choose a border</h2>
   <div class="borders" id="borders"></div>
 </section>
 
 <section class="card">
-  <h2>4 · Ergebnis</h2>
+  <h2>4 · Result</h2>
   <div class="prev">
-    <figure><canvas id="mold"></canvas><figcaption>Form (gespiegelt) · hell = flach, dunkel = tief</figcaption></figure>
-    <figure><canvas id="cookie"></canvas><figcaption>So sieht das Gebäck aus (Vorschau)</figcaption></figure>
+    <figure><canvas id="mold"></canvas><figcaption>Mold (mirrored) · light = flat, dark = deep</figcaption></figure>
+    <figure><canvas id="cookie"></canvas><figcaption>Cookie preview (how the baked cookie looks)</figcaption></figure>
   </div>
   <div class="row" style="margin-top:14px">
-    <button id="save" type="button">Tiefenkarte (PNG) speichern</button>
-    <button id="saveAll" type="button" class="ghost">Alle 6 Ränder speichern</button>
+    <button id="save" type="button">Save depth map (PNG)</button>
+    <button id="saveAll" type="button" class="ghost">Save all 6 borders</button>
   </div>
-  <h2 style="margin:20px 0 10px">5 · 3D-Druck (STL)</h2>
+  <h2 style="margin:20px 0 10px">5 · 3D print (STL)</h2>
   <div class="row">
-    <label>Mesh-Auflösung<select id="ms" style="font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"><option value="6">6 px/mm · klein (ca. 18 MB)</option><option value="8" selected>8 px/mm · fein (ca. 31 MB)</option><option value="10">10 px/mm · sehr fein (ca. 48 MB)</option></select></label>
-    <label><span>Sockel unter tiefster Stelle (mm) · Gesamtdicke: <b id="thick">5,7</b> mm</span><input id="base" type="number" min="0.6" max="10" step="0.2" value="1.2"></label>
-    <button id="stlN" type="button">STL Form (Negativ)</button>
-    <button id="stlP" type="button" class="ghost">STL Positiv (Gießvorlage)</button>
+    <label>Mesh resolution<select id="ms" style="font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"><option value="6">6 px/mm · small (approx. 18 MB)</option><option value="8" selected>8 px/mm · fine (approx. 31 MB)</option><option value="10">10 px/mm · very fine (approx. 48 MB)</option></select></label>
+    <label><span>Base under deepest point (mm) · Total thickness: <b id="thick">5.7</b> mm</span><input id="base" type="number" min="0.6" max="10" step="0.2" value="1.2"></label>
+    <button id="stlN" type="button">STL mold (negative)</button>
+    <button id="stlP" type="button" class="ghost">STL positive (casting master)</button>
   </div>
-  <p class="note" id="stlNote" style="margin:10px 0 0">Gedruckt wird flach, Relief nach oben. Es gilt der oben gewählte Rand und die Tiefe aus Schritt 2.</p>
-  <p class="note" id="dlNote" style="margin:10px 0 0">Export: 25 Pixel pro mm, Schwarz = tiefste Stelle. Als Heightmap in CNC- oder 3D-Software importieren.</p>
+  <p class="note" id="stlNote" style="margin:10px 0 0">Print flat with the relief facing up. Uses the border selected above and the depth from step 2.</p>
+  <p class="note" id="dlNote" style="margin:10px 0 0">Export: 25 pixels per mm, black = deepest point. Import as a heightmap into CNC or 3D software.</p>
 </section>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
-const NAMES = {A:["Doppellinie","klassisch"], B:["Perlrand","Punktkette"], C:["Zackenband","Kerbschnitt"], D:["Wellenband","Ranke"], E:["Rautenband","Rauten"], F:["Bogenfries","Girlande"]};
+const NAMES = {A:["Double line","classic"], B:["Pearl border","dot chain"], C:["Zigzag band","notched"], D:["Wave band","vine"], E:["Diamond band","lozenges"], F:["Arch frieze","garland"]};
 const BORDERS = ["A","B","C","D","E","F"];
 let src = null, border = "A", timer = 0;
 
@@ -117,73 +118,73 @@ function sampleFox(){
   x.fillStyle = "#666"; x.fill(tail); x.fill(body);
   x.fillStyle = "#c8c8c8"; x.beginPath(); x.ellipse(152,275,22,62,0.08,0,7); x.fill();
   x.fillStyle = "#222"; x.fill(head);
-  // Schwanzspitze weiß
+  // white tail tip and fur strokes on the tail
   x.save(); x.clip(tail); x.fillStyle = "#fff"; x.beginPath(); x.ellipse(345,182,38,34,0,0,7); x.fill();
-  x.strokeStyle = "#000"; x.lineWidth = 1.4;
-  for (let i=0;i<11;i++){ x.beginPath(); x.moveTo(258+i*9,338-i*3); x.quadraticCurveTo(298+i*8,292-i*13,338+i*3,222-i*4); x.stroke(); }
+  x.strokeStyle = "#000"; x.lineWidth = 5;
+  for (let i=0;i<5;i++){ x.beginPath(); x.moveTo(262+i*20,338-i*6); x.quadraticCurveTo(300+i*18,290-i*26,338+i*6,225-i*10); x.stroke(); }
   x.restore();
-  // Fell am Körper
-  x.save(); x.clip(body); x.strokeStyle = "#000"; x.lineWidth = 1.2;
-  for (let i=0;i<9;i++){ x.beginPath(); x.moveTo(205+i*10,190+i*9); x.quadraticCurveTo(222+i*10,228+i*9,212+i*10,264+i*9); x.stroke(); }
-  for (let i=0;i<8;i++){ x.beginPath(); x.moveTo(134,215+i*14); x.quadraticCurveTo(148,224+i*14,166,238+i*14); x.stroke(); }
+  // fur on the body and chest
+  x.save(); x.clip(body); x.strokeStyle = "#000"; x.lineWidth = 5;
+  for (let i=0;i<5;i++){ x.beginPath(); x.moveTo(210+i*19,196+i*16); x.quadraticCurveTo(228+i*19,236+i*16,218+i*19,276+i*16); x.stroke(); }
+  for (let i=0;i<4;i++){ x.beginPath(); x.moveTo(134,226+i*26); x.quadraticCurveTo(148,236+i*26,166,252+i*26); x.stroke(); }
   x.restore();
-  // Kopf: helle Linien
-  x.strokeStyle = "#fff"; x.lineWidth = 1.5;
-  [[112,30,121,64],[171,40,168,72],[138,152,172,160],[128,160,160,173],[112,164,142,177],[70,118,92,112]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
-  x.fillStyle = "#fff"; x.beginPath(); x.ellipse(98,105,9,3.5,-0.4,0,7); x.fill();
-  x.fillStyle = "#000"; x.beginPath(); x.arc(49,125,6,0,7); x.fill();
-  // Schnurrhaare
-  x.strokeStyle = "#000"; x.lineWidth = 1.3;
-  [[40,122,8,112],[40,128,6,129],[42,134,10,146]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
+  // head: light lines (ears, cheek)
+  x.strokeStyle = "#fff"; x.lineWidth = 5;
+  [[112,32,121,64],[171,42,168,72],[136,152,172,162],[118,164,150,178],[70,118,92,112]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
+  x.fillStyle = "#fff"; x.beginPath(); x.ellipse(98,105,10,5,-0.4,0,7); x.fill();
+  x.fillStyle = "#000"; x.beginPath(); x.arc(49,125,7,0,7); x.fill();
+  // whiskers
+  x.strokeStyle = "#000"; x.lineWidth = 5;
+  [[38,120,8,106],[38,128,6,128],[42,136,12,152]].forEach(l => { x.beginPath(); x.moveTo(l[0],l[1]); x.lineTo(l[2],l[3]); x.stroke(); });
   return c;
 }
 
 function drawBorder(x, bd, W, H, S){
   x.fillStyle = x.strokeStyle = "#000";
   if (bd === "A"){
-    x.lineWidth = 0.6*S; rr(x, 3.2*S, 3.2*S, W-6.4*S, H-6.4*S, 1.5*S); x.stroke();
-    x.lineWidth = 0.35*S; rr(x, 4.6*S, 4.6*S, W-9.2*S, H-9.2*S, 0.9*S); x.stroke();
+    x.lineWidth = 0.8*S; rr(x, 3.6*S, 3.6*S, W-7.2*S, H-7.2*S, 1.6*S); x.stroke();
+    x.lineWidth = 0.5*S; rr(x, 5.6*S, 5.6*S, W-11.2*S, H-11.2*S, 1.0*S); x.stroke();
   } else if (bd === "B"){
-    const m = 3.5*S, n1 = Math.round((W-2*m)/(2*S)), n2 = Math.round((H-2*m)/(2*S));
+    const m = 4*S, n1 = Math.round((W-2*m)/(3.2*S)), n2 = Math.round((H-2*m)/(3.2*S));
     const dot = (px,py,r) => { x.beginPath(); x.arc(px,py,r,0,7); x.fill(); };
-    for (let i=0;i<=n1;i++){ const px = m+i*(W-2*m)/n1; dot(px,m,0.6*S); dot(px,H-m,0.6*S); }
-    for (let i=0;i<=n2;i++){ const py = m+i*(H-2*m)/n2; dot(m,py,0.6*S); dot(W-m,py,0.6*S); }
-    [[m,m],[W-m,m],[m,H-m],[W-m,H-m]].forEach(p => dot(p[0],p[1],1.0*S));
+    for (let i=0;i<=n1;i++){ const px = m+i*(W-2*m)/n1; dot(px,m,0.8*S); dot(px,H-m,0.8*S); }
+    for (let i=0;i<=n2;i++){ const py = m+i*(H-2*m)/n2; dot(m,py,0.8*S); dot(W-m,py,0.8*S); }
+    [[m,m],[W-m,m],[m,H-m],[W-m,H-m]].forEach(p => dot(p[0],p[1],1.3*S));
   } else {
-    // C, D, E, F: zwei feine Rahmenlinien mit Ornamentband dazwischen
-    x.lineWidth = 0.4*S;
-    rr(x, 3*S, 3*S, W-6*S, H-6*S, 1.2*S); x.stroke();
-    rr(x, 5.4*S, 5.4*S, W-10.8*S, H-10.8*S, 0.7*S); x.stroke();
+    // C, D, E, F: two frame lines with an ornament band between them
+    x.lineWidth = 0.6*S;
+    rr(x, 3.3*S, 3.3*S, W-6.6*S, H-6.6*S, 1.4*S); x.stroke();
+    rr(x, 6.5*S, 6.5*S, W-13*S, H-13*S, 0.8*S); x.stroke();
     const side = len => {
-      const n = Math.max(2, Math.round((len-6*S)/(2*S))), tw = (len-6*S)/n;
+      const x00 = 3.3*S, n = Math.max(2, Math.round((len-6.6*S)/(3*S))), tw = (len-6.6*S)/n;
       if (bd === "C"){
         for (let i=0;i<n;i++){
-          const x0 = 3*S+i*tw; x.beginPath();
-          if (i%2===0){ x.moveTo(x0,3.3*S); x.lineTo(x0+tw,3.3*S); x.lineTo(x0+tw/2,5.1*S); }
-          else { x.moveTo(x0,5.1*S); x.lineTo(x0+tw,5.1*S); x.lineTo(x0+tw/2,3.3*S); }
+          const x0 = x00+i*tw; x.beginPath();
+          if (i%2===0){ x.moveTo(x0,3.8*S); x.lineTo(x0+tw,3.8*S); x.lineTo(x0+tw/2,6.0*S); }
+          else { x.moveTo(x0,6.0*S); x.lineTo(x0+tw,6.0*S); x.lineTo(x0+tw/2,3.8*S); }
           x.closePath(); x.fill();
         }
       } else if (bd === "D"){
-        x.lineWidth = 0.35*S; x.beginPath();
-        for (let px=3*S; px<=len-3*S; px+=S/4){
-          const py = 4.2*S + 0.7*S*Math.sin((px-3*S)/(len-6*S)*n*Math.PI);
-          if (px===3*S) x.moveTo(px,py); else x.lineTo(px,py);
+        x.lineWidth = 0.6*S; x.beginPath();
+        for (let px=x00; px<=len-x00; px+=S/4){
+          const py = 4.9*S + 0.8*S*Math.sin((px-x00)/(len-2*x00)*n*Math.PI);
+          if (px===x00) x.moveTo(px,py); else x.lineTo(px,py);
         }
         x.stroke();
       } else if (bd === "E"){
-        x.lineWidth = 0.3*S; x.beginPath();
+        x.lineWidth = 0.5*S; x.beginPath();
         for (let i=0;i<n;i++){
-          const x0 = 3*S+i*tw;
-          x.moveTo(x0,3.5*S); x.lineTo(x0+tw/2,4.9*S); x.lineTo(x0+tw,3.5*S);
-          x.moveTo(x0,4.9*S); x.lineTo(x0+tw/2,3.5*S); x.lineTo(x0+tw,4.9*S);
+          const x0 = x00+i*tw;
+          x.moveTo(x0,3.9*S); x.lineTo(x0+tw/2,5.9*S); x.lineTo(x0+tw,3.9*S);
+          x.moveTo(x0,5.9*S); x.lineTo(x0+tw/2,3.9*S); x.lineTo(x0+tw,5.9*S);
         }
         x.stroke();
       } else {
-        x.lineWidth = 0.35*S;
+        x.lineWidth = 0.5*S;
         for (let i=0;i<n;i++){
-          const cx = 3*S+(i+0.5)*tw;
-          x.beginPath(); x.arc(cx,3.3*S,tw/2-0.15*S,0,Math.PI); x.stroke();
-          x.beginPath(); x.arc(cx,3.6*S,0.22*S,0,7); x.fill();
+          const cx = x00+(i+0.5)*tw;
+          x.beginPath(); x.arc(cx,3.7*S,tw/2-0.3*S,0,Math.PI); x.stroke();
+          x.beginPath(); x.arc(cx,4.4*S,0.45*S,0,7); x.fill();
         }
       }
     };
@@ -195,6 +196,19 @@ function drawBorder(x, bd, W, H, S){
 
 function bH(s,d,W,H,r){for(let y=0;y<H;y++){const o=y*W;let sum=0;for(let i=-r;i<=r;i++)sum+=s[o+Math.min(W-1,Math.max(0,i))];for(let x=0;x<W;x++){d[o+x]=sum/(2*r+1);sum+=s[o+Math.min(W-1,x+r+1)]-s[o+Math.max(0,x-r)];}}}
 function bV(s,d,W,H,r){for(let x=0;x<W;x++){let sum=0;for(let i=-r;i<=r;i++)sum+=s[Math.min(H-1,Math.max(0,i))*W+x];for(let y=0;y<H;y++){d[y*W+x]=sum/(2*r+1);sum+=s[Math.min(H-1,y+r+1)*W+x]-s[Math.max(0,y-r)*W+x];}}}
+function boxMax(a,W,H,r,mn){
+  const f = mn ? Math.min : Math.max, t = new Float32Array(a.length), o = new Float32Array(a.length);
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){ let v = a[y*W+x]; for (let k=Math.max(0,x-r);k<=Math.min(W-1,x+r);k++) v = f(v,a[y*W+k]); t[y*W+x] = v; }
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){ let v = t[y*W+x]; for (let k=Math.max(0,y-r);k<=Math.min(H-1,y+r);k++) v = f(v,t[k*W+x]); o[y*W+x] = v; }
+  return o;
+}
+function thicken(h,W,H,r){
+  if (r < 1) return;
+  const op = boxMax(boxMax(h,W,H,r,true),W,H,r,false), thin = new Float32Array(h.length);
+  for (let i=0;i<h.length;i++) thin[i] = h[i] > op[i]+1e-3 ? h[i] : 0;
+  const d = boxMax(thin,W,H,r,false);
+  for (let i=0;i<h.length;i++) h[i] = Math.max(h[i], d[i]);
+}
 function draft(h,W,H,c){
   const d = c*1.4142;
   for (let y=0;y<H;y++) for (let x=0;x<W;x++){
@@ -218,7 +232,7 @@ function blur(a,W,H,r){
 
 function compute(bd, S){
   const Wm = +$("w").value, Hm = +$("h").value;
-  const W = Math.round(Wm*S), H = Math.round(Hm*S), inset = 7*S;
+  const W = Math.round(Wm*S), H = Math.round(Hm*S), inset = 9*S;
   const c = document.createElement("canvas"); c.width = W; c.height = H;
   const x = c.getContext("2d", {willReadFrequently:true});
   x.fillStyle = "#fff"; x.fillRect(0,0,W,H);
@@ -238,7 +252,8 @@ function compute(bd, S){
     if (inv && px>=rx0 && px<rx1 && py>=ry0 && py<ry1) dk = 1-dk;
     const v = Math.max(0, Math.min(1, (dk-thr)/(1-thr))); h[i] = N>=32 ? v : Math.round(v*(N-1))/(N-1);
   }
-  // Rand
+  const mwv = +$("mw").value; if (mwv > 0) thicken(h, W, H, Math.round(mwv*S/2));
+  // border
   const bc = document.createElement("canvas"); bc.width = W; bc.height = H;
   const bx = bc.getContext("2d", {willReadFrequently:true});
   bx.fillStyle = "#fff"; bx.fillRect(0,0,W,H); drawBorder(bx, bd, W, H, S);
@@ -291,7 +306,7 @@ function blobOf(cv){ return new Promise(r => cv.toBlob(r, "image/png")); }
 async function exportBorder(b){
   const res = compute(b, 25), cv = document.createElement("canvas"); drawMold(cv, res);
   const blob = await blobOf(cv);
-  await saveFile(`springerle_form_${b}_${$("w").value}x${$("h").value}mm_${$("dep").value}mm.png`, blob);
+  await saveFile(`springerle_mold_${b}_${$("w").value}x${$("h").value}mm_${$("dep").value}mm.png`, blob);
 }
 
 function buildSTL(res, mode, base, depth, S){
@@ -342,16 +357,16 @@ function buildSTL(res, mode, base, depth, S){
 async function exportSTL(mode){
   const note = $("stlNote"), old = note.textContent;
   try {
-    note.textContent = "Berechne Mesh …"; await new Promise(r => setTimeout(r,40));
+    note.textContent = "Computing mesh …"; await new Promise(r => setTimeout(r,40));
     const S = +$("ms").value, res = compute(border, S), st = buildSTL(res, mode, +$("base").value, +$("dep").value, S);
-    const nm = `springerle_${mode==="neg"?"form":"positiv"}_${border}_${$("w").value}x${$("h").value}mm`;
+    const nm = `springerle_${mode==="neg"?"mold":"positive"}_${border}_${$("w").value}x${$("h").value}mm`;
     const blob = new Blob([st.buf], {type:"model/stl"});
-    note.textContent = `${st.tris.toLocaleString("de-DE")} Dreiecke, ${(blob.size/1048576).toFixed(0)} MB.`;
+    note.textContent = `${st.tris.toLocaleString("en-US")} triangles, ${(blob.size/1048576).toFixed(0)} MB.`;
     await saveFile(nm+".stl", blob);
-    note.textContent = "Fertig. Die STL-Datei im Slicer öffnen.";
-  } catch(e){ note.textContent = "Fehler: " + ((e && e.message) || "unbekannt"); }
+    note.textContent = "Done. Open the STL file in your slicer.";
+  } catch(e){ note.textContent = "Error: " + ((e && e.message) || "unknown"); }
 }
-// Aufbau
+// Setup
 const bw = $("borders");
 BORDERS.forEach(b => {
   const btn = document.createElement("button");
@@ -360,8 +375,8 @@ BORDERS.forEach(b => {
   btn.onclick = () => { border = b; bw.querySelectorAll(".bopt").forEach(e => e.classList.toggle("on", e.dataset.b===b)); render(); };
   bw.appendChild(btn);
 });
-const fmt = v => String(v).replace(".", ",");
-[["dep","depV"],["thr","thrV"],["lev","levV"],["sm","smV"],["dr","drV"]].forEach(([i,o]) => $(i).addEventListener("input", () => { $(o).textContent = fmt($(i).value); schedule(); }));
+const fmt = v => String(v);
+[["dep","depV"],["thr","thrV"],["lev","levV"],["sm","smV"],["dr","drV"],["mw","mwV"]].forEach(([i,o]) => $(i).addEventListener("input", () => { $(o).textContent = fmt($(i).value); schedule(); }));
 ["w","h","inv"].forEach(i => $(i).addEventListener("input", schedule));
 $("fox").onclick = () => { src = sampleFox(); render(); };
 $("file").onchange = e => {
